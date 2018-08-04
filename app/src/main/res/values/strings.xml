@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">PocketNews</string>
+    <string name="no_internet_connection">No internet connection</string>
+    <string name="no_data">No news data found.</string>
+</resources>

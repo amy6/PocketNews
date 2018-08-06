@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public static final String QUERY_PARAM = "q";
     public static final String QUERY_THUMBNAIL = "show-fields";
     public static final String API_KEY = "02a343d2-4227-4238-ad61-b556100841c4";
-    public static final String PARAM_VALUE = "android";
+    public static final String PARAM_VALUE = "andrsfsfoid";
     public static final String THUMBNAIL_VALUE = "thumbnail";
 
     private RecyclerView recyclerView;
@@ -52,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
         if (!isConnected) {
             emptyTextView.setText(R.string.no_internet_connection);
+            emptyTextView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_cloud_off, 0, 0);
+            emptyTextView.setCompoundDrawablePadding(8);
             progressBar.setVisibility(View.GONE);
         } else {
             getSupportLoaderManager().initLoader(1, null, this);
@@ -94,6 +96,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             emptyTextView.setVisibility(View.GONE);
         } else {
             emptyTextView.setText(R.string.no_data);
+            emptyTextView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_search, 0, 0);
+            emptyTextView.setCompoundDrawablePadding(8);
             recyclerView.setVisibility(View.GONE);
             emptyTextView.setVisibility(View.VISIBLE);
         }

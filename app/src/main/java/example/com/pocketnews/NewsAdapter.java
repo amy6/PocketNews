@@ -14,8 +14,12 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -42,7 +46,8 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
         Glide.with(context).load(newsItem.getThumbnailUrl()).into(holder.imageView);
         holder.title.setText(newsItem.getTitle());
         holder.section.setText(newsItem.getSection());
-        holder.publishDate.setText(newsItem.publishDate);
+        String formattedDate = Utils.formatDate(newsItem.publishDate);
+        holder.publishDate.setText(formattedDate);
         holder.constraintLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

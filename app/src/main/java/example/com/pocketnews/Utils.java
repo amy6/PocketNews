@@ -15,8 +15,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public final class Utils {
 
@@ -119,5 +123,18 @@ public final class Utils {
             e.printStackTrace();
         }
         return url;
+    }
+
+    public static String formatDate(String publishDate) {
+        String formattedDate = "";
+        SimpleDateFormat inputSdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+        SimpleDateFormat outputSdf = new SimpleDateFormat("dd MMM HH:mm", Locale.getDefault());
+        try {
+            Date date = inputSdf.parse(publishDate);
+            formattedDate = outputSdf.format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return formattedDate;
     }
 }

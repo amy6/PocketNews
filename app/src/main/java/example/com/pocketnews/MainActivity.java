@@ -9,6 +9,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -26,7 +27,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public static final String QUERY_PARAM = "q";
     public static final String QUERY_THUMBNAIL = "show-fields";
     public static final String API_KEY = "02a343d2-4227-4238-ad61-b556100841c4";
-    public static final String PARAM_VALUE = "india";
+    public static final String PARAM_VALUE = "android";
     public static final String THUMBNAIL_VALUE = "thumbnail";
 
     private RecyclerView recyclerView;
@@ -61,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         adapter = new NewsAdapter(this, news);
 
         recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
@@ -101,6 +103,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onLoaderReset(@NonNull Loader<List<NewsItem>> loader) {
+        news.clear();
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
         news.clear();
         adapter.notifyDataSetChanged();
     }

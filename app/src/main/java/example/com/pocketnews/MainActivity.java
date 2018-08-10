@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public static final String QUERY_PARAM = "q";
     public static final String QUERY_THUMBNAIL = "show-fields";
     public static final String API_KEY = "02a343d2-4227-4238-ad61-b556100841c4";
-    public static final String PARAM_VALUE = "andrsfsfoid";
+    public static final String PARAM_VALUE = "android";
     public static final String THUMBNAIL_VALUE = "thumbnail";
 
     private RecyclerView recyclerView;

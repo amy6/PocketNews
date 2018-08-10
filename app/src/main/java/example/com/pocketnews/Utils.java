@@ -1,7 +1,10 @@
 package example.com.pocketnews;
 
+import android.annotation.SuppressLint;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.bumptech.glide.request.RequestOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -136,5 +139,14 @@ public final class Utils {
             e.printStackTrace();
         }
         return formattedDate;
+    }
+
+    @SuppressLint("CheckResult")
+    public static RequestOptions setUpGlide() {
+        RequestOptions requestOptions = new RequestOptions();
+        requestOptions.placeholder(R.drawable.news_placeholder);
+        requestOptions.error(R.drawable.ic_error_outline);
+
+        return requestOptions;
     }
 }

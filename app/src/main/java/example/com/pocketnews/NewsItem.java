@@ -2,13 +2,13 @@ package example.com.pocketnews;
 
 public class NewsItem {
 
-    String title;
-    String section;
-    String webUrl;
-    String thumbnailUrl;
-    String publishDate;
+    private String title;
+    private String section;
+    private String webUrl;
+    private String thumbnailUrl;
+    private String publishDate;
 
-    public NewsItem(String title, String section, String webUrl, String thumbnailUrl, String publishDate) {
+    NewsItem(String title, String section, String webUrl, String thumbnailUrl, String publishDate) {
         this.title = title;
         this.section = section;
         this.webUrl = webUrl;

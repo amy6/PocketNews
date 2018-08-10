@@ -11,7 +11,7 @@ public class NewsLoader extends AsyncTaskLoader<List<NewsItem>> {
 
     private String reqUrl;
 
-    public NewsLoader(@NonNull Context context, String reqUrl) {
+    NewsLoader(@NonNull Context context, String reqUrl) {
         super(context);
         this.reqUrl = reqUrl;
     }

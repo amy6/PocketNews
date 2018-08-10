@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private static final String QUERY_PARAM = "q";
     private static final String QUERY_THUMBNAIL = "show-fields";
     private static final String QUERY_AUTHOR = "show-tags";
-    private static final String API_KEY = "02a343d2-4227-4238-ad61-b556100841c4";
+    private static final String API_KEY = BuildConfig.GUARDIAN_API_KEY;
     private static final String PARAM_VALUE = "android";
     private static final String THUMBNAIL_VALUE = "thumbnail";
     private static final String AUTHOR_VALUE = "contributor";

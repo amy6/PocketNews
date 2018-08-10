@@ -1,6 +1,9 @@
 package example.com.pocketnews.utils;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -27,6 +30,8 @@ import java.util.Locale;
 
 import example.com.pocketnews.R;
 import example.com.pocketnews.model.NewsItem;
+
+import static android.content.Context.CONNECTIVITY_SERVICE;
 
 public final class Utils {
 
@@ -62,10 +67,18 @@ public final class Utils {
                 String section = newsObj.getString("sectionName");
                 String publishDate = newsObj.getString("webPublicationDate");
                 String webUrl = newsObj.getString("webUrl");
+
                 JSONObject fields = newsObj.getJSONObject("fields");
                 String thumbnailUrl = fields.getString("thumbnail");
 
-                NewsItem newsItem = new NewsItem(title, section, webUrl, thumbnailUrl, publishDate);
+                String authorName = "";
+                JSONArray tags = newsObj.getJSONArray("tags");
+                if (tags.length() > 0) {
+                    JSONObject authorProfile = (JSONObject) tags.get(0);
+                    authorName = authorProfile.getString("webTitle");
+                }
+
+                NewsItem newsItem = new NewsItem(title, section, webUrl, thumbnailUrl, publishDate, authorName);
                 news.add(newsItem);
             }
         } catch (JSONException e) {
@@ -151,5 +164,14 @@ public final class Utils {
         requestOptions.error(R.drawable.ic_error_outline);
 
         return requestOptions;
+    }
+
+    public static boolean isConnectedToNetwork(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = null;
+        if (connectivityManager != null) {
+            activeNetwork = connectivityManager.getActiveNetworkInfo();
+        }
+        return activeNetwork != null && activeNetwork.isConnected();
     }
 }

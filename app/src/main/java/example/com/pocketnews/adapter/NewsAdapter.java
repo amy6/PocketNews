@@ -47,7 +47,9 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
                 .load(newsItem.getThumbnailUrl())
                 .into(holder.imageView);
         holder.title.setText(newsItem.getTitle());
+        holder.title.setLines(2);
         holder.section.setText(newsItem.getSection());
+        holder.authorName.setText(newsItem.getAuthorName());
         String formattedDate = Utils.formatDate(newsItem.getPublishDate());
         holder.publishDate.setText(formattedDate);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -74,6 +76,8 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
         TextView section;
         @BindView(R.id.publishDate)
         TextView publishDate;
+        @BindView(R.id.author)
+        TextView authorName;
 
         NewsViewHolder(@NonNull View itemView) {
             super(itemView);

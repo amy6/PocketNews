@@ -1,32 +1,33 @@
 package example.com.pocketnews;
 
 import android.app.SearchManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import example.com.pocketnews.adapter.NewsAdapter;
 import example.com.pocketnews.loader.NewsLoader;
 import example.com.pocketnews.model.NewsItem;
+import example.com.pocketnews.utils.Utils;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<NewsItem>> {
 
@@ -34,32 +35,34 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private static final String QUERY_API_KEY = "api-key";
     private static final String QUERY_PARAM = "q";
     private static final String QUERY_THUMBNAIL = "show-fields";
+    private static final String QUERY_AUTHOR = "show-tags";
     private static final String API_KEY = "02a343d2-4227-4238-ad61-b556100841c4";
     private static final String PARAM_VALUE = "android";
     private static final String THUMBNAIL_VALUE = "thumbnail";
+    private static final String AUTHOR_VALUE = "contributor";
 
-    private RecyclerView recyclerView;
+    @BindView(R.id.recyclerView)
+    RecyclerView recyclerView;
+    @BindView(R.id.emptyTextView)
+    TextView emptyTextView;
+    @BindView(R.id.progressBar)
+    ProgressBar progressBar;
+
     private NewsAdapter adapter;
-    private TextView emptyTextView;
-    private ProgressBar progressBar;
     private List<NewsItem> news;
     private String queryText;
-    private android.widget.SearchView searchView;
+    private SearchView searchView;
+    private boolean isConnected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        emptyTextView = findViewById(R.id.emptyTextView);
-        progressBar = findViewById(R.id.progressBar);
+        ButterKnife.bind(this);
 
-        ConnectivityManager connectivityManager = (ConnectivityManager) this.getSystemService(CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = null;
-        if (connectivityManager != null) {
-            activeNetwork = connectivityManager.getActiveNetworkInfo();
-        }
-        boolean isConnected = activeNetwork != null && activeNetwork.isConnected();
+        isConnected = Utils.isConnectedToNetwork(this);
+
         if (!isConnected) {
             emptyTextView.setText(R.string.no_internet_connection);
             emptyTextView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_cloud_off, 0, 0);
@@ -74,7 +77,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         adapter = new NewsAdapter(this, news);
 
-        recyclerView = findViewById(R.id.recyclerView);
         recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         recyclerView.setHasFixedSize(true);
@@ -91,11 +93,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         searchView = (android.widget.SearchView) searchItem.getActionView();
         if (searchManager != null) {
             searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+            searchView.setMaxWidth(Integer.MAX_VALUE);
+            searchView.setQueryHint("Search for News");
         }
 
         android.widget.SearchView.OnQueryTextListener queryTextListener = new android.widget.SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
+                isConnected = Utils.isConnectedToNetwork(MainActivity.this);
+                if (!isConnected) {
+                    news.clear();
+                    adapter.notifyDataSetChanged();
+                    return false;
+                }
                 emptyTextView.setVisibility(View.GONE);
                 progressBar.setVisibility(View.VISIBLE);
                 queryText = s;
@@ -123,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         Uri.Builder builder = Uri.parse(GDN_REQ_URL).buildUpon();
         builder.appendQueryParameter(QUERY_PARAM, queryText)
                 .appendQueryParameter(QUERY_THUMBNAIL, THUMBNAIL_VALUE)
+                .appendQueryParameter(QUERY_AUTHOR, AUTHOR_VALUE)
                 .appendQueryParameter(QUERY_API_KEY, API_KEY);
 
         Log.d("URI is : ", builder.toString());
@@ -169,8 +180,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
         news.clear();
         adapter.notifyDataSetChanged();
     }

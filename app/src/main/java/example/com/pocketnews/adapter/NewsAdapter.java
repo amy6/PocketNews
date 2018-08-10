@@ -1,10 +1,9 @@
-package example.com.pocketnews;
+package example.com.pocketnews.adapter;
 
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,13 +18,16 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import example.com.pocketnews.R;
+import example.com.pocketnews.utils.Utils;
+import example.com.pocketnews.model.NewsItem;
 
 public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder> {
 
     private Context context;
     private List<NewsItem> news;
 
-    NewsAdapter(Context context, List<NewsItem> news) {
+    public NewsAdapter(Context context, List<NewsItem> news) {
         this.context = context;
         this.news = news;
     }
@@ -48,7 +50,7 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
         holder.section.setText(newsItem.getSection());
         String formattedDate = Utils.formatDate(newsItem.getPublishDate());
         holder.publishDate.setText(formattedDate);
-        holder.constraintLayout.setOnClickListener(new View.OnClickListener() {
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(newsItem.getWebUrl()));
@@ -72,8 +74,6 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
         TextView section;
         @BindView(R.id.publishDate)
         TextView publishDate;
-        @BindView(R.id.item_parent)
-        ConstraintLayout constraintLayout;
 
         NewsViewHolder(@NonNull View itemView) {
             super(itemView);

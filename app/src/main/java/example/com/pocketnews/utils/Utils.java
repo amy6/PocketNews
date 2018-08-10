@@ -1,4 +1,4 @@
-package example.com.pocketnews;
+package example.com.pocketnews.utils;
 
 import android.annotation.SuppressLint;
 import android.text.TextUtils;
@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import example.com.pocketnews.R;
+import example.com.pocketnews.model.NewsItem;
 
 public final class Utils {
 

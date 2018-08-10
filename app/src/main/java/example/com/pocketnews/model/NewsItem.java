@@ -1,4 +1,4 @@
-package example.com.pocketnews;
+package example.com.pocketnews.model;
 
 public class NewsItem {
 
@@ -8,7 +8,7 @@ public class NewsItem {
     private String thumbnailUrl;
     private String publishDate;
 
-    NewsItem(String title, String section, String webUrl, String thumbnailUrl, String publishDate) {
+    public NewsItem(String title, String section, String webUrl, String thumbnailUrl, String publishDate) {
         this.title = title;
         this.section = section;
         this.webUrl = webUrl;

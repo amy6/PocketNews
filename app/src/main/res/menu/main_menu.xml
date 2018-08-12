@@ -10,4 +10,11 @@
         app:actionViewClass="android.widget.SearchView"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/settings"
+        android:icon="@drawable/ic_filter"
+        android:orderInCategory="1"
+        android:title="@string/settings"
+        app:showAsAction="ifRoom" />
+
 </menu>

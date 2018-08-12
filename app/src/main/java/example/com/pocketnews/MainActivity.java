@@ -1,6 +1,7 @@
 package example.com.pocketnews;
 
 import android.app.SearchManager;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -117,6 +118,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         //set search query listener
         searchView.setOnQueryTextListener(this);
 
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
+        }
         return true;
     }
 

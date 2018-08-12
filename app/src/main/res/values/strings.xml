@@ -13,7 +13,7 @@
     <string name="order_by_newest_label">Newest</string>
     <string name="order_by_newest_value">newest</string>
 
-    <string name="order_by_oldest_label">Newest</string>
+    <string name="order_by_oldest_label">Oldest</string>
     <string name="order_by_oldest_value">oldest</string>
 
     <string name="order_by_relevance_label">Relevance</string>
@@ -22,7 +22,9 @@
     <string name="settings_search_for_label">Search for</string>
     <string name="settings_search_for_key">search_for</string>
     <string name="settings_search_for_default">android</string>
+
     <string name="news_settings">News Settings</string>
+    <string name="settings">Settings</string>
 
 
 </resources>

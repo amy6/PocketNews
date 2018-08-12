@@ -5,4 +5,24 @@
     <string name="no_desc_available">No description available</string>
     <string name="search">Search News</string>
     <string name="serach_hint">Search for News</string>
+
+    <string name="settings_order_by_label">Order By</string>
+    <string name="settings_order_by_key">order_by</string>
+    <string name="settings_order_by_default">@string/order_by_newest_value</string>
+
+    <string name="order_by_newest_label">Newest</string>
+    <string name="order_by_newest_value">newest</string>
+
+    <string name="order_by_oldest_label">Newest</string>
+    <string name="order_by_oldest_value">oldest</string>
+
+    <string name="order_by_relevance_label">Relevance</string>
+    <string name="order_by_relevance_value">relevance</string>
+
+    <string name="settings_search_for_label">Search for</string>
+    <string name="settings_search_for_key">search_for</string>
+    <string name="settings_search_for_default">android</string>
+    <string name="news_settings">News Settings</string>
+
+
 </resources>

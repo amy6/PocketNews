@@ -9,4 +9,9 @@
         android:title="@string/settings"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/action_refresh"
+        android:title="@string/refresh"
+        app:showAsAction="never"/>
+
 </menu>

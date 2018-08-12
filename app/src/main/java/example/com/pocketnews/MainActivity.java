@@ -8,6 +8,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -83,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             loaderManager.initLoader(1, null, this);
         }
 
+        refreshLayout.setColorSchemeColors(ContextCompat.getColor(this, R.color.colorAccent));
         refreshLayout.setOnRefreshListener(this);
 
         //initialize the array list to contain the news
@@ -92,7 +94,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         adapter = new NewsAdapter(this, news);
 
         //set up the recyclerview
-        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         recyclerView.setHasFixedSize(true);
         //attach the adapter

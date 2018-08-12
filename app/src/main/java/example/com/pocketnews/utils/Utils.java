@@ -34,6 +34,10 @@ import static android.content.Context.CONNECTIVITY_SERVICE;
 
 public final class Utils {
 
+    private static final int TIMEOUT = 10000;
+    private static final int CONNECT_TIMEOUT = 15000;
+    private static final String REQUEST_METHOD = "GET";
+
     private Utils() {
     }
 
@@ -72,30 +76,45 @@ public final class Utils {
             //create new json object for the json string
             JSONObject jsonObject = new JSONObject(jsonResponse);
             //extract the root object
-            JSONObject response = jsonObject.getJSONObject("response");
-            //fetch the results array
-            JSONArray jsonArray = response.getJSONArray("results");
-            //loop through the array elements and parse the individual fields
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject newsObj = jsonArray.getJSONObject(i);
-                String title = newsObj.getString("webTitle");
-                String section = newsObj.getString("sectionName");
-                String publishDate = newsObj.getString("webPublicationDate");
-                String webUrl = newsObj.getString("webUrl");
+            JSONObject response = jsonObject.optJSONObject("response");
+            
+            if (response != null) {
+                //fetch the results array
+                JSONArray jsonArray = response.optJSONArray("results");
+                
+                if (jsonArray != null) {
+                    //loop through the array elements and parse the individual fields
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject newsObj = jsonArray.optJSONObject(i);
+                        
+                        if (newsObj != null) {
+                            String title = newsObj.optString("webTitle");
+                            String section = newsObj.optString("sectionName");
+                            String publishDate = newsObj.optString("webPublicationDate");
+                            String webUrl = newsObj.optString("webUrl");
 
-                JSONObject fields = newsObj.getJSONObject("fields");
-                String thumbnailUrl = fields.getString("thumbnail");
+                            String thumbnailUrl = "";
+                            JSONObject fields = newsObj.optJSONObject("fields");
+                            if (fields != null) {
+                                thumbnailUrl = fields.optString("thumbnail");
+                            }
 
-                String authorName = "";
-                JSONArray tags = newsObj.getJSONArray("tags");
-                if (tags.length() > 0) {
-                    JSONObject authorProfile = (JSONObject) tags.get(0);
-                    authorName = authorProfile.getString("webTitle");
+                            JSONArray tags = newsObj.optJSONArray("tags");
+                            String authorName = "";
+                            if (tags != null && tags.length() > 0) {
+                                JSONObject authorProfile = (JSONObject) tags.get(0);
+                                authorName = authorProfile.optString("webTitle");
+                            }
+
+                            //initialize and add news items to the array list
+                            NewsItem newsItem = new NewsItem(title, section, webUrl, thumbnailUrl, publishDate, authorName);
+                            news.add(newsItem);
+                        } 
+                        }
+                        
                 }
-
-                //initialize and add news items to the array list
-                NewsItem newsItem = new NewsItem(title, section, webUrl, thumbnailUrl, publishDate, authorName);
-                news.add(newsItem);
+                
+            
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -125,9 +144,9 @@ public final class Utils {
         try {
             //set up the http url connection
             urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.setReadTimeout(10000);
-            urlConnection.setConnectTimeout(15000);
+            urlConnection.setRequestMethod(REQUEST_METHOD);
+            urlConnection.setReadTimeout(TIMEOUT);
+            urlConnection.setConnectTimeout(CONNECT_TIMEOUT);
             urlConnection.connect();
 
             //get the input stream to read data from

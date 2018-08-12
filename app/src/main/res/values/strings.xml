@@ -13,9 +13,6 @@
     <string name="order_by_newest_label">Newest</string>
     <string name="order_by_newest_value">newest</string>
 
-    <string name="order_by_oldest_label">Oldest</string>
-    <string name="order_by_oldest_value">oldest</string>
-
     <string name="order_by_relevance_label">Relevance</string>
     <string name="order_by_relevance_value">relevance</string>
 

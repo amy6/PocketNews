@@ -2,8 +2,10 @@ package example.com.pocketnews;
 
 import android.app.SearchManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
@@ -29,7 +31,7 @@ import example.com.pocketnews.loader.NewsLoader;
 import example.com.pocketnews.model.NewsItem;
 import example.com.pocketnews.utils.Utils;
 
-public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, LoaderManager.LoaderCallbacks<List<NewsItem>> {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<NewsItem>> {
 
     private static final String GDN_REQ_URL = "http://content.guardianapis.com/search";
     private static final String QUERY_API_KEY = "api-key";
@@ -37,9 +39,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private static final String QUERY_THUMBNAIL = "show-fields";
     private static final String QUERY_AUTHOR = "show-tags";
     private static final String API_KEY = BuildConfig.GUARDIAN_API_KEY;
-    private static final String PARAM_VALUE = "android";
     private static final String THUMBNAIL_VALUE = "thumbnail";
     private static final String AUTHOR_VALUE = "contributor";
+    public static final String QUERY_ORDER_BY = "order-by";
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -51,9 +53,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private NewsAdapter adapter;
     private List<NewsItem> news;
     private String queryText;
-    private SearchView searchView;
-    private boolean isConnected;
-    private LoaderManager loaderManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,10 +62,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         ButterKnife.bind(this);
 
         //get the reference to the loader manager to handle callbacks to loader
-        loaderManager = getSupportLoaderManager();
+        LoaderManager loaderManager = getSupportLoaderManager();
 
         //verify internet connectivity
-        isConnected = Utils.isConnectedToNetwork(this);
+        boolean isConnected = Utils.isConnectedToNetwork(this);
 
         //display helpful text to user if the internet connection is not working
         if (!isConnected) {
@@ -76,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             progressBar.setVisibility(View.GONE);
         } else {
             //set the query parameter value to be used for API call
-            queryText = PARAM_VALUE;
+            queryText = getString(R.string.settings_search_for_default);
             //initialize a new loader by calling onCreateLoader, if there isn't an existing one to reuse
             loaderManager.initLoader(1, null, this);
         }
@@ -98,67 +97,18 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        //inflate the menu
+        //inflate the menu options
         getMenuInflater().inflate(R.menu.main_menu, menu);
-
-        //get reference to the search menu item
-        final MenuItem searchItem = menu.findItem(R.id.action_search);
-        //get reference to SearchManager
-        SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
-        //resolve the reference to the SearchView widget
-        searchView = (SearchView) searchItem.getActionView();
-        if (searchManager != null) {
-            //set up search view
-            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-            //expand the search view to the full width of the app bar when clicked on
-            searchView.setMaxWidth(Integer.MAX_VALUE);
-            //set the user query hint
-            searchView.setQueryHint(getString(R.string.serach_hint));
-        }
-        //set search query listener
-        searchView.setOnQueryTextListener(this);
-
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        //handle settings menu option
         if (item.getItemId() == R.id.settings) {
+            //start settings activity when settings menu option is chosen
             startActivity(new Intent(this, SettingsActivity.class));
         }
-        return true;
-    }
-
-    @Override
-    public boolean onQueryTextSubmit(String s) {
-        //on query submit, make sure the device is still connected to the internet
-        isConnected = Utils.isConnectedToNetwork(MainActivity.this);
-        //clear any visible news data if the internet connection lost and update empty state views
-        if (!isConnected) {
-            news.clear();
-            adapter.notifyDataSetChanged();
-            emptyTextView.setText(R.string.no_internet_connection);
-            emptyTextView.setVisibility(View.VISIBLE);
-            return false;
-        }
-        //if the device is still connected to the internet, clear any empty state views
-        emptyTextView.setVisibility(View.GONE);
-        //display the progress bar
-        progressBar.setVisibility(View.VISIBLE);
-        //update the query text to be the newly entered user text
-        queryText = s;
-        //restart loader to discard old data and trigger API call for new query
-        loaderManager.restartLoader(1, null, MainActivity.this);
-        if (searchView != null) {
-            //clear edit text focus on search bar
-            searchView.clearFocus();
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean onQueryTextChange(String s) {
         return true;
     }
 
@@ -173,10 +123,20 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @NonNull
     @Override
     public Loader<List<NewsItem>> onCreateLoader(int id, @Nullable Bundle args) {
+
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        //fetch order_by value from SharedPreferences
+        String orderBy = sharedPrefs.getString(getString(R.string.settings_order_by_key), getString(R.string.settings_order_by_default));
+
+        //fetch search_for value from SharedPreferences
+        queryText = sharedPrefs.getString(getString(R.string.settings_search_for_key), getString(R.string.settings_search_for_default));
+
         //parse the base URL for Guardian API
         Uri.Builder builder = Uri.parse(GDN_REQ_URL).buildUpon();
         //set up the query parameters - topic for the news, thumbnail, author name and api key
         builder.appendQueryParameter(QUERY_PARAM, queryText)
+                .appendQueryParameter(QUERY_ORDER_BY, orderBy)
                 .appendQueryParameter(QUERY_THUMBNAIL, THUMBNAIL_VALUE)
                 .appendQueryParameter(QUERY_AUTHOR, AUTHOR_VALUE)
                 .appendQueryParameter(QUERY_API_KEY, API_KEY);
@@ -235,17 +195,4 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         adapter.notifyDataSetChanged();
     }
 
-
-    /**
-     * called when user presses the back button
-     */
-    @Override
-    public void onBackPressed() {
-        //handle back press while the searchview is expanded
-        if (searchView != null && !searchView.isIconified()) {
-            searchView.setIconified(true);
-        } else {
-            super.onBackPressed();
-        }
-    }
 }

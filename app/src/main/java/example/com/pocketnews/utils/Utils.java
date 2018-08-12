@@ -5,7 +5,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.bumptech.glide.request.RequestOptions;
 
@@ -49,7 +48,6 @@ public final class Utils {
         String jsonResponse = "";
         try {
             jsonResponse = makeHttpRequest(createUrl(reqUrl));
-            Log.d("Response is : ", jsonResponse);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -202,7 +200,7 @@ public final class Utils {
         //define input date format
         SimpleDateFormat inputSdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
         //define output date format
-        SimpleDateFormat outputSdf = new SimpleDateFormat("dd MMM HH:mm", Locale.getDefault());
+        SimpleDateFormat outputSdf = new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault());
         try {
             //parse and format the input date
             Date date = inputSdf.parse(publishDate);

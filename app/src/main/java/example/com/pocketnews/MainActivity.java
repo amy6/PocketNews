@@ -128,18 +128,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onRefresh() {
 
+        //hide progress bar as refresh layout has it's own indicator
         progressBar.setVisibility(View.GONE);
-        recyclerView.setVisibility(View.GONE);
-        emptyTextView.setVisibility(View.GONE);
 
         //verify connectivity before fetching the results
         isConnected = Utils.isConnectedToNetwork(this);
         if (!isConnected) {
             refreshLayout.setRefreshing(false);
-            emptyTextView.setText(R.string.no_internet_connection);
-            emptyTextView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_cloud_off, 0, 0);
-            emptyTextView.setCompoundDrawablePadding(8);
-            emptyTextView.setVisibility(View.VISIBLE);
+            //update the empty stat views for no internet connection
+            updateEmptyState(R.string.no_internet_connection, R.drawable.ic_cloud_off);
             return;
         }
             //restart loader to reload the data
@@ -196,13 +193,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         //hide refresh progress indicator
         refreshLayout.setRefreshing(false);
 
-        //verify if data is null - possibly due to error from the server
+        ////update the empty stat views for server error
         if (data == null) {
-            emptyTextView.setText(R.string.server_error);
-            emptyTextView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_error_outline, 0, 0);
-            emptyTextView.setCompoundDrawablePadding(8);
-            emptyTextView.setVisibility(View.VISIBLE);
-            recyclerView.setVisibility(View.GONE);
+            updateEmptyState(R.string.server_error, R.drawable.ic_error_outline);
             return;
         }
 
@@ -217,12 +210,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             recyclerView.setVisibility(View.VISIBLE);
             emptyTextView.setVisibility(View.GONE);
         } else {
-            //if no data has been returned, update the empty state views as required
-            emptyTextView.setText(R.string.no_data);
-            emptyTextView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_search, 0, 0);
-            emptyTextView.setCompoundDrawablePadding(8);
-            emptyTextView.setVisibility(View.VISIBLE);
-            recyclerView.setVisibility(View.GONE);
+            //update the empty stat views for no data
+            updateEmptyState(R.string.no_data, R.drawable.ic_search);
         }
 
 
@@ -239,6 +228,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         //clear data from the list
         news.clear();
         adapter.notifyDataSetChanged();
+    }
+
+    /**
+     * updates empty state views accordingly
+     * @param emptyStringId display string for the empty state
+     * @param emptyImageId vector drawable for the empty state
+     */
+    private void updateEmptyState(int emptyStringId, int emptyImageId) {
+        emptyTextView.setText(emptyStringId);
+        emptyTextView.setCompoundDrawablesWithIntrinsicBounds(0, emptyImageId, 0, 0);
+        emptyTextView.setCompoundDrawablePadding(8);
+        emptyTextView.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.GONE);
     }
 
 }

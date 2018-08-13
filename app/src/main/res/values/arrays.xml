@@ -2,8 +2,8 @@
 <resources>
 
     <string-array name="settings_order_by_labels">
-        <item>@string/order_by_newest_label</item>
         <item>@string/order_by_relevance_label</item>
+        <item>@string/order_by_newest_label</item>
     </string-array>
 
     <string-array name="settings_order_by_values">

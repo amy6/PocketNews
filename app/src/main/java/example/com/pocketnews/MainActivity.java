@@ -12,7 +12,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
@@ -128,13 +127,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      */
     @Override
     public void onRefresh() {
+
+        progressBar.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.GONE);
+        emptyTextView.setVisibility(View.GONE);
+
         //verify connectivity before fetching the results
         isConnected = Utils.isConnectedToNetwork(this);
         if (!isConnected) {
+            refreshLayout.setRefreshing(false);
             emptyTextView.setText(R.string.no_internet_connection);
             emptyTextView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_cloud_off, 0, 0);
             emptyTextView.setCompoundDrawablePadding(8);
-            progressBar.setVisibility(View.GONE);
+            emptyTextView.setVisibility(View.VISIBLE);
             return;
         }
             //restart loader to reload the data
@@ -191,8 +196,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         //hide refresh progress indicator
         refreshLayout.setRefreshing(false);
 
+        //verify if data is null - possibly due to error from the server
+        if (data == null) {
+            emptyTextView.setText(R.string.server_error);
+            emptyTextView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_error_outline, 0, 0);
+            emptyTextView.setCompoundDrawablePadding(8);
+            emptyTextView.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+            return;
+        }
+
         //verify if the data loaded is empty
-        if (data != null && !data.isEmpty()) {
+        if (!data.isEmpty()) {
             //clear any existing data displayed
             news.clear();
             news.addAll(data);
@@ -207,7 +222,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             emptyTextView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_search, 0, 0);
             emptyTextView.setCompoundDrawablePadding(8);
             emptyTextView.setVisibility(View.VISIBLE);
-
             recyclerView.setVisibility(View.GONE);
         }
 

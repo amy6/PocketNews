@@ -23,6 +23,7 @@
     <string name="news_settings">News Settings</string>
     <string name="settings">Settings</string>
     <string name="refresh">Refresh</string>
+    <string name="server_error">Unable to fetch data. Please try again after sometime!</string>
 
 
 </resources>

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.bumptech.glide.request.RequestOptions;
 
@@ -37,6 +38,8 @@ public final class Utils {
     private static final int TIMEOUT = 10000;
     private static final int CONNECT_TIMEOUT = 15000;
     private static final String REQUEST_METHOD = "GET";
+    private static final long RETRY_DELAY_MS = 3000;
+    private static final int RETRIES = 3;
 
     private Utils() {
     }
@@ -143,16 +146,21 @@ public final class Utils {
 
         try {
             //set up the http url connection
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod(REQUEST_METHOD);
-            urlConnection.setReadTimeout(TIMEOUT);
-            urlConnection.setConnectTimeout(CONNECT_TIMEOUT);
-            urlConnection.connect();
+            urlConnection = verifyConnectionResponse(url);
 
-            //get the input stream to read data from
-            inputStream = urlConnection.getInputStream();
-            jsonResponse = readFromStream(inputStream);
+            if (urlConnection != null) {
+                urlConnection.setRequestMethod(REQUEST_METHOD);
+                urlConnection.setReadTimeout(TIMEOUT);
+                urlConnection.setConnectTimeout(CONNECT_TIMEOUT);
+                urlConnection.connect();
+
+                //get the input stream to read data from
+                inputStream = urlConnection.getInputStream();
+                jsonResponse = readFromStream(inputStream);
+            }
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
             //disconnect the url connection
@@ -166,6 +174,41 @@ public final class Utils {
         }
 
         return jsonResponse;
+    }
+
+    private static HttpURLConnection verifyConnectionResponse(URL url) throws InterruptedException, IOException {
+        int retry = 0;
+        boolean delay = false;
+        HttpURLConnection urlConnection;
+        do {
+            if (delay) {
+                Thread.sleep(RETRY_DELAY_MS);
+            }
+            urlConnection = (HttpURLConnection) url.openConnection();
+            //verify http connection response status
+            switch (urlConnection.getResponseCode()) {
+                case HttpURLConnection.HTTP_OK:
+                    Log.d("HttpConnection", " **OK**");
+                    return urlConnection;
+                case HttpURLConnection.HTTP_GATEWAY_TIMEOUT:
+                    Log.w("HttpConnection", " **GATEWAY TIMEOUT**");
+                    break;
+                case HttpURLConnection.HTTP_UNAVAILABLE:
+                    Log.w("HttpConnection", " **UNAVAILABLE**");
+                    break;
+                default:
+                    Log.e("HttpConnection", " **UNKNOWN RESPONSE CODE**");
+                    break;
+            }
+            urlConnection.disconnect();
+
+            retry++;
+            Log.w("HttpConnection", "Failed retry " + retry + "/" + RETRIES);
+            delay = true;
+
+        } while (retry < RETRIES);
+        Log.e("HttpConnection", " Aborting download of data");
+        return urlConnection;
     }
 
     /**

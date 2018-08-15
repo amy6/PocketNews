@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -30,7 +31,7 @@ import example.com.pocketnews.loader.NewsLoader;
 import example.com.pocketnews.model.NewsItem;
 import example.com.pocketnews.utils.Utils;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<NewsItem>>, SwipeRefreshLayout.OnRefreshListener {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<NewsItem>>, SwipeRefreshLayout.OnRefreshListener, OnLoadMoreListener {
 
     private static final String GDN_REQ_URL = "http://content.guardianapis.com/search";
     private static final String QUERY_API_KEY = "api-key";
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private static final String THUMBNAIL_VALUE = "thumbnail";
     private static final String AUTHOR_VALUE = "contributor";
     public static final String QUERY_ORDER_BY = "order-by";
+    public static final String QUERY_PAGE = "page";
 
     @BindView(R.id.recyclerView)
     RecyclerView recyclerView;
@@ -55,7 +57,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private List<NewsItem> news;
     private String queryText;
     private LoaderManager loaderManager;
-    private boolean isConnected;
+    private int startPage = 1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,40 +67,41 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         ButterKnife.bind(this);
 
-        //get the reference to the loader manager to handle callbacks to loader
+        //get reference to the loader manager to handle callbacks to loader
         loaderManager = getSupportLoaderManager();
 
         //verify internet connectivity
-        isConnected = Utils.isConnectedToNetwork(this);
-
-        //display helpful text to user if the internet connection is not working
-        if (!isConnected) {
+        if (Utils.isConnectedToNetwork(this)) {
+            //set the default query parameter value to be used for API call
+            queryText = getString(R.string.settings_search_for_default);
+            //initialize a new loader
+            loaderManager.initLoader(1, null, this);
+        } else {
+            //display helpful text to user if the internet connection is not available
             emptyTextView.setText(R.string.no_internet_connection);
             emptyTextView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_cloud_off, 0, 0);
             emptyTextView.setCompoundDrawablePadding(8);
             progressBar.setVisibility(View.GONE);
-        } else {
-            //set the query parameter value to be used for API call
-            queryText = getString(R.string.settings_search_for_default);
-            //initialize a new loader by calling onCreateLoader, if there isn't an existing one to reuse
-            loaderManager.initLoader(1, null, this);
         }
 
+        //set custom color of refresh layout progress indicator
         refreshLayout.setColorSchemeColors(ContextCompat.getColor(this, R.color.colorAccent));
         refreshLayout.setOnRefreshListener(this);
 
-        //initialize the array list to contain the news
+        //initialize the news array list
         news = new ArrayList<>();
-
-        //initialize the custom news adapter
-        adapter = new NewsAdapter(this, news);
 
         //set up the recyclerview
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         recyclerView.setHasFixedSize(true);
-        //attach the adapter
+        //initialize the custom news adapter
+        adapter = new NewsAdapter(this, news, recyclerView);
+
+        //attach the adapter to the recyclerview
         recyclerView.setAdapter(adapter);
 
+        //set on load more listener for the adapter to enable pagination
+        adapter.setOnLoadMoreListener(this);
     }
 
     @Override
@@ -110,37 +114,44 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         //handle settings menu option
+
         if (item.getItemId() == R.id.settings) {
             //start settings activity when settings menu option is chosen
             startActivity(new Intent(this, SettingsActivity.class));
         }
 
-        if (item.getItemId() == R.id.action_refresh) {
-            progressBar.setVisibility(View.VISIBLE);
-            onRefresh();
-        }
         return true;
     }
 
     /**
-     * called on swipe gesture
+     * called on pull to refresh gesture
      */
     @Override
     public void onRefresh() {
 
-        //hide progress bar as refresh layout has it's own indicator
-        progressBar.setVisibility(View.GONE);
+        //clear existing data on refresh and notify the adapter
+        news.clear();
+        adapter.notifyDataSetChanged();
+
+        //remove pagination progress loading footer item
+        adapter.removeLoadingFooter(null);
+        //disable pagination while refreshing
+        adapter.setLoaded();
+        adapter.setOnLoadMoreListener(null);
+
+        //reset the start page
+        startPage = 1;
 
         //verify connectivity before fetching the results
-        isConnected = Utils.isConnectedToNetwork(this);
-        if (!isConnected) {
-            refreshLayout.setRefreshing(false);
-            //update the empty stat views for no internet connection
-            updateEmptyState(R.string.no_internet_connection, R.drawable.ic_cloud_off);
-            return;
-        }
+        if (Utils.isConnectedToNetwork(this)) {
             //restart loader to reload the data
             loaderManager.restartLoader(1, null, this);
+        } else {
+            refreshLayout.setRefreshing(false);
+            //update the empty state views for no internet connection
+            updateEmptyState(R.string.no_internet_connection, R.drawable.ic_cloud_off);
+        }
+
     }
 
     /**
@@ -169,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         builder.appendQueryParameter(QUERY_PARAM, queryText)
                 .appendQueryParameter(QUERY_ORDER_BY, orderBy)
                 .appendQueryParameter(QUERY_THUMBNAIL, THUMBNAIL_VALUE)
+                .appendQueryParameter(QUERY_PAGE, String.valueOf(startPage))
                 .appendQueryParameter(QUERY_AUTHOR, AUTHOR_VALUE)
                 .appendQueryParameter(QUERY_API_KEY, API_KEY);
 
@@ -190,10 +202,14 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         //hide the progress indicator once the loading is complete
         progressBar.setVisibility(View.GONE);
 
-        //hide refresh progress indicator
-        refreshLayout.setRefreshing(false);
+        //remove pagination progress loading footer item
+        adapter.removeLoadingFooter(null);
+        //disable pagination
+        adapter.setLoaded();
+        //enable the listener if it was previously disabled on refresh
+        adapter.setOnLoadMoreListener(this);
 
-        ////update the empty stat views for server error
+        //update the empty stat views for server error
         if (data == null) {
             updateEmptyState(R.string.server_error, R.drawable.ic_error_outline);
             return;
@@ -201,10 +217,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         //verify if the data loaded is empty
         if (!data.isEmpty()) {
-            //clear any existing data displayed
-            news.clear();
             news.addAll(data);
-            adapter.notifyDataSetChanged();
+            adapter.notifyItemRangeChanged(news.size() + 1, data.size());
+            startPage++;
 
             //display the recyclerview and hide the empty state views
             recyclerView.setVisibility(View.VISIBLE);
@@ -214,6 +229,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             updateEmptyState(R.string.no_data, R.drawable.ic_search);
         }
 
+        //hide refresh progress indicator
+        refreshLayout.setRefreshing(false);
+        //enable refresh layout once the data is fetched
+        refreshLayout.setEnabled(true);
 
     }
 
@@ -224,16 +243,43 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      * @param loader reference to the loader instance associated with the data
      */
     @Override
-    public void onLoaderReset(@NonNull Loader<List<NewsItem>> loader) {
-        //clear data from the list
-        news.clear();
-        adapter.notifyDataSetChanged();
+    public void onLoaderReset(@NonNull Loader<List<NewsItem>> loader) { }
+
+    /*
+    handles pagination - calls loader to fetch data from the next page
+     */
+    @Override
+    public void onLoadMore() {
+
+        if (Utils.isConnectedToNetwork(this)) {
+            //disable pull to refresh
+            refreshLayout.setEnabled(false);
+
+            //add null, so the adapter will show progress bar at the bottom after resolving the view type
+            adapter.addLoadingFooter(null);
+            /*
+            restart loader to be called with the updated start page number
+            handle the call as a separate callback to prevent updating recyclerview inside scroll callback
+             */
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    loaderManager.restartLoader(1, null, MainActivity.this);
+                }
+            });
+
+        } else {
+            //display internet connectivity error
+            updateEmptyState(R.string.no_internet_connection, R.drawable.ic_cloud_off);
+        }
+
     }
 
     /**
      * updates empty state views accordingly
+     *
      * @param emptyStringId display string for the empty state
-     * @param emptyImageId vector drawable for the empty state
+     * @param emptyImageId  vector drawable for the empty state
      */
     private void updateEmptyState(int emptyStringId, int emptyImageId) {
         emptyTextView.setText(emptyStringId);
@@ -244,3 +290,4 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
 }
+

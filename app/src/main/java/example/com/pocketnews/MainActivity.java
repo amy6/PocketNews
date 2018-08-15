@@ -15,6 +15,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -74,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (Utils.isConnectedToNetwork(this)) {
             //set the default query parameter value to be used for API call
             queryText = getString(R.string.settings_search_for_default);
+            Log.d("TAG", "InitLoader");
             //initialize a new loader
             loaderManager.initLoader(1, null, this);
         } else {
@@ -129,6 +131,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public void onRefresh() {
 
+        //hide progress bar as refresh layout has it's own progress indicator
+        progressBar.setVisibility(View.GONE);
+
         //clear existing data on refresh and notify the adapter
         news.clear();
         adapter.notifyDataSetChanged();
@@ -144,6 +149,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         //verify connectivity before fetching the results
         if (Utils.isConnectedToNetwork(this)) {
+            Log.d("TAG", "RestartLoader on Refresh");
             //restart loader to reload the data
             loaderManager.restartLoader(1, null, this);
         } else {
@@ -165,6 +171,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @NonNull
     @Override
     public Loader<List<NewsItem>> onCreateLoader(int id, @Nullable Bundle args) {
+
+        Log.d("TAG", "OnCreateLoader");
 
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -198,6 +206,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      */
     @Override
     public void onLoadFinished(@NonNull Loader<List<NewsItem>> loader, List<NewsItem> data) {
+
+        Log.d("TAG", "OnLoadFinished");
 
         //hide the progress indicator once the loading is complete
         progressBar.setVisibility(View.GONE);
@@ -234,6 +244,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         //enable refresh layout once the data is fetched
         refreshLayout.setEnabled(true);
 
+        //destroy loader to prevent unnecessary calls to load finished
+        loaderManager.destroyLoader(1);
+
     }
 
     /**
@@ -243,7 +256,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
      * @param loader reference to the loader instance associated with the data
      */
     @Override
-    public void onLoaderReset(@NonNull Loader<List<NewsItem>> loader) { }
+    public void onLoaderReset(@NonNull Loader<List<NewsItem>> loader) {
+        Log.d("TAG", "OnLoaderReset - not clearing data anymore!");
+//        news.clear();
+//        adapter.notifyDataSetChanged();
+    }
 
     /*
     handles pagination - calls loader to fetch data from the next page
@@ -264,6 +281,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             new Handler().post(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d("TAG", "RestartLoader on LoadMore");
                     loaderManager.restartLoader(1, null, MainActivity.this);
                 }
             });

@@ -14,4 +14,15 @@ News App is developed as part of **Udacity Android Basics Nanodegree** under **G
 
 ![no_results](https://user-images.githubusercontent.com/5392993/43981865-482fdaa6-9d11-11e8-88da-3d501c4f1be6.jpg) ![offline](https://user-images.githubusercontent.com/5392993/43981867-48ba119e-9d11-11e8-9fd0-59a5ec53918a.jpg)
 
+**Customizable Settings for user**
+
+![settings](https://user-images.githubusercontent.com/5392993/44137392-e8f8c130-a08d-11e8-9045-492936f55217.jpg)
+
+![order_by](https://user-images.githubusercontent.com/5392993/44137388-e7dfbeac-a08d-11e8-9eb6-9b99ea676438.jpg) ![search_for](https://user-images.githubusercontent.com/5392993/44137391-e86c69ec-a08d-11e8-8234-cd214eaf19e6.jpg)
+
+Workflow video of the app:
+
+https://vimeo.com/285066447
+
+
 
